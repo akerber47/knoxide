@@ -1,8 +1,9 @@
 use crate::mix_types::{MixByte, MixAddr, MixWord};
 
 // Helpful constants
-const ONES: u32 = !0;
-const ONES_16: u16 = !0;
+pub const ONES: u32 = !0;
+pub const ONES_64: u64 = !0;
+pub const ONES_16: u16 = !0;
 
 // Unlike MIX, my computer doesn't have separate sign bits.
 // So we need these utility functions anytime we want to do arithmetic.
@@ -10,14 +11,14 @@ const ONES_16: u16 = !0;
 // Convert a MIX address to a signed machine 16-bit integer.
 pub fn from_mix_addr(addr: MixAddr) -> i16 {
     let iaddr = (addr & (ONES_16 >> 4)) as i16;
-    let sign = ((addr >> 12) & 1) as i16;
-    return (sign * 2 - 1) * iaddr;
+    let sign = (addr >> 12) & 1;
+    return if sign == 0 { iaddr } else { -iaddr };
 }
 
 // Convert a signed machine 16-bit integer to a MIX address.
-// This function assumes the value is small enough to fit in a MIX
-// address (any larger bits are truncated).
-fn to_mix_addr(addr: i16) -> MixAddr {
+// If the number is too large to fit in a MIX address, any higher-order
+// bits are truncated.
+pub fn to_mix_addr(addr: i16) -> MixAddr {
     let uaddr;
     if addr < 0 {
         uaddr = (-addr) as u16;
@@ -30,16 +31,16 @@ fn to_mix_addr(addr: i16) -> MixAddr {
 }
 
 // Convert a MIX word to a signed machine 32-bit integer.
-fn from_mix_word(word: MixWord) -> i32 {
+pub fn from_mix_word(word: MixWord) -> i32 {
     let iword = (word & (ONES >> 2)) as i32;
-    let sign = ((word >> 30) & 1) as i32;
-    return (sign * 2 - 1) * iword;
+    let sign = (word >> 30) & 1;
+    return if sign == 0 { iword } else { -iword };
 }
 
 // Convert a signed machine 32-bit integer to a MIX word.
-// This function assumes the value is small enough to fit in a MIX
-// word (any larger bits are truncated).
-fn to_mix_word(word: i32) -> MixWord {
+// If the number is too large to fit in a MIX word, any higher-order
+// bits are truncated.
+pub fn to_mix_word(word: i32) -> MixWord {
     let uword;
     if word < 0 {
         uword = (-word) as u32;
@@ -51,12 +52,39 @@ fn to_mix_word(word: i32) -> MixWord {
     return (sign_bit << 30) | (uword & (ONES >> 2));
 }
 
+// Convert two MIX words to a signed machine 64-bit integer.
+// Use the sign of the higher word.
+pub fn from_mix_dword(hi: MixWord, lo: MixWord) -> i64 {
+    let ihi = (hi & (ONES >> 2)) as i64;
+    let ilo = (lo & (ONES >> 2)) as i64;
+    let idword = (ihi << 30) | ilo;
+    let sign = (hi >> 30) & 1;
+    return if sign == 0 { idword } else { -idword};
+}
+
+// Convert a signed machine 64-bit integer to two MIX words.
+// If the number is too large to fit in two MIX words, any higher-order
+// bits are truncated.
+pub fn to_mix_dword(dword: i64) -> (MixWord, MixWord) {
+    let udword;
+    if dword < 0 {
+        udword = (-word) as u64;
+    }
+    else {
+        udword = word as u64;
+    }
+    let sign_bit = (word < 0) as u32;
+    let lo = (uword & (ONES_64 >> 34)) as u32;
+    let hi = ((uword >> 30) & (ONES_64 >> 34)) as u32;
+    return ((sign_bit << 30) | hi, (sign_bit << 30) | lo);
+}
+
 // Utility function.
 // Returns bytes from the given byte up to and including the given byte,
 // from within a mix word. From and to must be between 0 and 5, inclusive.
 // The result is returned in the lowest-order bits of the u32 return argument.
 // Note that if the sign is requested its bit will be shifted over as well!
-fn get_bytes(word: MixWord, from: u8, to: u8) -> u32 {
+pub fn get_bytes(word: MixWord, from: u8, to: u8) -> u32 {
     if from == 0 {
         return word >> (6 * (5 - to));
     } else {
@@ -67,7 +95,7 @@ fn get_bytes(word: MixWord, from: u8, to: u8) -> u32 {
 // Apply the given field specification to the given word. This zeroes out
 // all parts of the word not included in the field specification. All parts
 // of the word within the field specification are retained.
-fn get_field_word(word: MixWord, field_spec: MixByte) -> MixWord {
+pub fn get_field_word(word: MixWord, field_spec: MixByte) -> MixWord {
     let l = field_spec / 8;
     let r = field_spec % 8;
     return get_bytes(word, l, r) << (6 * (5 - r));

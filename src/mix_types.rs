@@ -31,7 +31,8 @@ pub struct MixRegisters {
     pub j: MixAddr,
 }
 
-pub type MixMemory = [MixWord; 4000];
+pub const MEM_SIZE :usize = 4000;
+pub type MixMemory = [MixWord; MEM_SIZE];
 
 pub enum MixCompare {
     Less,
@@ -50,3 +51,16 @@ pub struct MixState<'a> {
     pub pc: u32,
 }
 
+// For MIX overflow / undefined behavior checking
+pub const MIX_WORD_MAX: i32 = 0b111111_111111_111111_111111_111111;
+pub const MIX_WORD_MIN: i32 = -0b111111_111111_111111_111111_111111;
+pub const MIX_ADDR_MAX: i16 = 0b111111_111111;
+pub const MIX_ADDR_MIN: i16 = -0b111111_111111;
+pub const MIX_DOUBLEWORD_MAX: i64 =
+    0b111111_111111_111111_111111_111111_111111_111111_111111_111111_111111;
+pub const MIX_DOUBLEWORD_MIN: i64 =
+    -0b111111_111111_111111_111111_111111_111111_111111_111111_111111_111111;
+
+// For MIX out of memory access checking
+pub const MIX_MEMORY_ADDR_MAX: i16 = (MEM_SIZE - 1) as i16;
+pub const MIX_MEMORY_ADDR_MIN: i16 = 0;
