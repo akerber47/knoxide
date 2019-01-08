@@ -22,7 +22,7 @@ pub type MixWord = u32;
 // [unused bits] [sign] [byte1] [byte2]
 pub type MixAddr = u16;
 
-// "There are nine registers in MIX"
+#[derive(Debug)]
 pub struct MixRegisters {
     pub a: MixWord,
     pub x: MixWord,
@@ -32,14 +32,17 @@ pub struct MixRegisters {
 }
 
 pub const MEM_SIZE :usize = 4000;
+
 pub type MixMemory = [MixWord; MEM_SIZE];
 
+#[derive(Debug)]
 pub enum MixCompare {
     Less,
     Equal,
     Greater,
 }
 
+#[derive(Debug)]
 pub struct MixState<'a> {
     // Documented state features.
     pub r: MixRegisters,

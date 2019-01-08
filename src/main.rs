@@ -21,6 +21,7 @@ fn handle_input(line: String, st: &mut MixState) -> () {
                 mix_core::do_mix_step(st);
             } else  {
                 println!("Bad command");
+            }
         },
         2 => {
             if words[0] == "show" {
@@ -31,8 +32,8 @@ fn handle_input(line: String, st: &mut MixState) -> () {
                 } else if words[1] == "instructions" || words[1] == "i" {
                     // TODO: nice disassembled instructions
                     println!("{:#?}", st.pc);
-                    let lb = std::max(0, st.pc as usize - 10);
-                    let ub = std::min(MEM_SIZE - 1, st.pc as usize + 10);
+                    let lb = std::cmp::max(0, st.pc as usize - 10);
+                    let ub = std::cmp::min(MEM_SIZE - 1, st.pc as usize + 10);
                     println!("{:#?}", &st.memory[lb .. ub]);
                 }
                 else {
@@ -45,7 +46,7 @@ fn handle_input(line: String, st: &mut MixState) -> () {
         3 => {} // TODO: set registers, set memory, show memory,
                 // load from file into memory starting at position.
         4 => {} // TODO: show memory range
-        _ => println!("Bad command");
+        _ => println!("Bad command"),
     }
     // TODO: fancier commands: breakpoints and watchpoints.
     // (can check in memory get, memory set, and step/jump)
