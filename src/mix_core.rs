@@ -1,6 +1,13 @@
 use crate::mix_types::*;
 use crate::mix_util;
 
+// Helper function to panic the system.
+// Stops running and puts the given message into the panic field.
+fn do_panic(st: &mut MixState, msg: String) -> () {
+    st.is_running = false;
+    st.panic_msg = Some(msg);
+}
+
 // Helper function to pull out address and apply index registers.
 // Panic if the address field overflows when adding the index.
 fn effective_address(instr: MixWord, r: &MixRegisters) -> MixAddr {
@@ -23,10 +30,10 @@ fn effective_address(instr: MixWord, r: &MixRegisters) -> MixAddr {
 // Look up the value at an address in memory.
 // Include fields according to the field specification.
 // Panic if the address doesn't correspond to a real memory address.
-fn memory_get(m: MixAddr, f: MixByte, st: &MixState) -> MixWord {
+fn memory_get(m: MixAddr, f: MixByte, st: &mut MixState) -> MixWord {
     let m_val = mix_util::from_mix_addr(m);
     if m_val > MIX_MEMORY_ADDR_MAX || m_val < MIX_MEMORY_ADDR_MIN {
-        panic!(format!("Out of bounds memory access! {}", m_val));
+        do_panic(st, format!("Out of bounds memory access! {}", m_val));
     }
     let m_ix = m_val as usize;
     return mix_util::get_field_word(st.memory[m_ix], f);
@@ -59,7 +66,7 @@ fn do_mix_instruction(instr: MixWord, st: &mut MixState) -> () {
         48...55 => do_address_transfer(c, f, m, st),
         // Comparison operators
         56...63 => do_compare(c, f, m, st),
-        _ => panic!(format!("Bad operator {}", c)),
+        _ => do_panic(st, format!("Bad operator {}", c)),
     }
 }
 
@@ -110,7 +117,7 @@ fn do_arithmetic(c: MixByte, f: MixByte, m: MixAddr, st: &mut MixState)
                 st.r.x = old_a_sign | mix_util::to_mix_word(new_rem as i32);
             }
         },
-        _ => panic!(format!("Unexpected opcode {}", c)),
+        _ => panic!(format!("Bad opcode for arithmetic at {}", c)),
     }
 }
 
@@ -191,4 +198,26 @@ fn do_address_transfer(_c: MixByte, _f: MixByte, _m: MixAddr, _st: &mut MixState
 
 fn do_compare(_c: MixByte, _f: MixByte, _m: MixAddr, _st: &mut MixState) -> () {
     // TODO
+}
+
+// Execute the single instruction under the program counter.
+// Increment the program counter on completion.
+// (TODO: handle jumps, etc)
+pub fn do_mix_step(st: &mut MixState) -> () {
+    let instr = memory_get(st.pc, 5, st);
+    do_mix_instruction(instr, st);
+    st.pc = (st.pc + 1) % (MEM_SIZE as u16);
+}
+
+// Continue execution until the program halts or an error occurs.
+// Stop as soon as that happens.
+pub fn do_mix_run(st: &mut MixState) -> () {
+    st.is_running = true;
+    while st.is_running {
+        do_mix_step(st);
+    }
+    match &st.panic_msg {
+        Some(s) => println!("Panicked! {}", s),
+        None => println!("Halted!"),
+    }
 }

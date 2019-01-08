@@ -41,14 +41,16 @@ pub enum MixCompare {
 }
 
 pub struct MixState<'a> {
+    // Documented state features.
     pub r: MixRegisters,
     pub comparison: MixCompare,
     pub overflow: bool,
     pub memory: &'a MixMemory,
     pub io: (), // TODO
-    // Inexplicably, a program counter is not documented explicitly. Presumably
-    // this is because it's an implementation detail. Still, we need it!
-    pub pc: u32,
+    // Undocumented "implementation detail" features.
+    pub pc: MixAddr,
+    pub is_running: bool,
+    pub panic_msg: Option<String>,
 }
 
 // For MIX overflow / undefined behavior checking
