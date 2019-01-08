@@ -41,7 +41,7 @@ pub enum MixCompare {
 }
 
 pub struct MixState<'a> {
-    pub r: &'a MixRegisters,
+    pub r: MixRegisters,
     pub comparison: MixCompare,
     pub overflow: bool,
     pub memory: &'a MixMemory,

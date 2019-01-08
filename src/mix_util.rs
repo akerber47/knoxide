@@ -68,14 +68,14 @@ pub fn from_mix_dword(hi: MixWord, lo: MixWord) -> i64 {
 pub fn to_mix_dword(dword: i64) -> (MixWord, MixWord) {
     let udword;
     if dword < 0 {
-        udword = (-word) as u64;
+        udword = (-dword) as u64;
     }
     else {
-        udword = word as u64;
+        udword = dword as u64;
     }
-    let sign_bit = (word < 0) as u32;
-    let lo = (uword & (ONES_64 >> 34)) as u32;
-    let hi = ((uword >> 30) & (ONES_64 >> 34)) as u32;
+    let sign_bit = (dword < 0) as u32;
+    let lo = (udword & (ONES_64 >> 34)) as u32;
+    let hi = ((udword >> 30) & (ONES_64 >> 34)) as u32;
     return ((sign_bit << 30) | hi, (sign_bit << 30) | lo);
 }
 
