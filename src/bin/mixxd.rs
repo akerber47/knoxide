@@ -1,6 +1,6 @@
 extern crate knoxide;
 
-// use knoxide::mix_fmt;
+use knoxide::mix_fmt;
 use std::io::prelude::*;
 
 fn main() {
@@ -71,8 +71,22 @@ fn main() {
             },
         };
 
-        // Not yet implemented
-        // let dump = mix_fmt::fmt_words(&in_bytes);
+        let dump = mix_fmt::fmt_words(&in_bytes);
+
+        match outfile {
+            Some(s) => {
+                let mut f = std::fs::File::create(s).expect(
+                    "mixxd: Failed to open file!");
+                if let Err(e) = write!(f, "{}", dump) {
+                    eprintln!("mixxd: write failed! {}", e);
+                }
+            },
+            None => {
+                if let Err(e) = write!(std::io::stdout(), "{}", dump) {
+                    eprintln!("mixxd: write failed! {}", e);
+                }
+
+            },
+        };
     }
-    println!("{:?}", args);
 }
