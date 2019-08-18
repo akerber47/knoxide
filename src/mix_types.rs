@@ -42,7 +42,6 @@ pub enum MixCompare {
     Greater,
 }
 
-#[derive(Debug)]
 pub struct MixState<'a> {
     // Documented state features.
     pub r: MixRegisters,

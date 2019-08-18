@@ -1,10 +1,8 @@
 extern crate rustyline;
+extern crate knoxide;
 
-mod mix_util;
-mod mix_types;
-mod mix_core;
-
-use self::mix_types::*;
+use knoxide::mix_core;
+use knoxide::mix_types::*;
 
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
@@ -28,7 +26,8 @@ fn handle_input(line: String, st: &mut MixState) -> () {
                 if words[1] == "registers" || words[1] == "r" {
                     println!("{:#?}", st.r);
                 } else if words[1] == "state" || words[1] == "st" {
-                    println!("{:#?}", st);
+                    // TODO make it printable
+                    // println!("{:#?}", st);
                 } else if words[1] == "instructions" || words[1] == "i" {
                     // TODO: nice disassembled instructions
                     println!("{:#?}", st.pc);
@@ -54,7 +53,8 @@ fn handle_input(line: String, st: &mut MixState) -> () {
 
 fn main() {
     // Initialize MIX state
-    let mut mem: MixMemory = [0; MEM_SIZE];
+    // let mut mem: MixMemory = [0; MEM_SIZE];
+    let mem: MixMemory = [0; MEM_SIZE];
     let mut st = MixState {
         r: MixRegisters {
             a: 0,
