@@ -68,3 +68,27 @@ pub const MIX_DOUBLEWORD_MIN: i64 =
 // For MIX out of memory access checking
 pub const MIX_MEMORY_ADDR_MAX: i16 = (MEM_SIZE - 1) as i16;
 pub const MIX_MEMORY_ADDR_MIN: i16 = 0;
+
+// Conversion functions for byte arrays.  Note that we assume a little-endian machine. That is,
+// within each word/addr, the least significant byte appears first in the input array.
+// For convenience, this takes in a slice, not a fixed length array,
+// but it had better be the right length.
+
+pub fn word_from(bytes: &[u8]) -> MixWord {
+    assert!(bytes.len() == 4);
+    let mut w: MixWord = 0;
+    for b in bytes {
+        w = (w >> 8) | ((*b as u32) << 24);
+    }
+    w
+}
+
+pub fn addr_from(bytes: &[u8]) -> MixAddr {
+    assert!(bytes.len() == 2);
+    let mut a: MixAddr = 0;
+    for b in bytes {
+        a = (a >> 8) | ((*b as u16) << 8);
+    }
+    a
+}
+
