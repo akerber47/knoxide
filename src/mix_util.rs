@@ -1,4 +1,4 @@
-use crate::mix_types::{MixByte, MixAddr, MixWord};
+use crate::mix_types::*;
 
 // Helpful constants
 pub const ONES: u32 = !0;
@@ -90,6 +90,21 @@ pub fn get_bytes(word: MixWord, from: u8, to: u8) -> u32 {
     } else {
         return (word >> (6 * (5 - to))) & (ONES >> (32 - 6 * (to - from + 1)));
     }
+}
+
+pub fn word_from_bytes(sign: u8, b1: u8, b2: u8, b3: u8, b4: u8, b5: u8) -> MixWord {
+    assert!(sign == 0 || sign == 1);
+    assert!(b1 <= MIX_BYTE_MAX &&
+            b2 <= MIX_BYTE_MAX &&
+            b3 <= MIX_BYTE_MAX &&
+            b4 <= MIX_BYTE_MAX &&
+            b5 <= MIX_BYTE_MAX);
+    ((sign as u32) << 30) |
+        ((b1 as u32) << 24) |
+        ((b2 as u32) << 18) |
+        ((b3 as u32) << 12) |
+        ((b4 as u32) << 6) |
+        (b5 as u32)
 }
 
 // Apply the given field specification to the given word. This zeroes out
